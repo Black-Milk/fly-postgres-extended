@@ -1,0 +1,74 @@
+# fly.toml app configuration file generated for risekit-analytics-db on 2024-05-23T16:50:49-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+# change to your app name
+app = 'risekit-analytics-db'
+primary_region = 'ord'
+
+[env]
+  PRIMARY_REGION = 'ord'
+
+
+[build]
+  # modify this for your use case
+  image = 'rkprod/flypg-extended:latest'
+
+[[mounts]]
+  source = 'pg_data'
+  destination = '/data'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 5432
+  auto_start_machines = false
+
+  [[services.ports]]
+    port = 5432
+    handlers = ['pg_tls']
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 1000
+    soft_limit = 1000
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 5433
+  auto_start_machines = false
+
+  [[services.ports]]
+    port = 5433
+    handlers = ['pg_tls']
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 1000
+    soft_limit = 1000
+
+[checks]
+  [checks.pg]
+    port = 5500
+    type = 'http'
+    interval = '15s'
+    timeout = '10s'
+    path = '/flycheck/pg'
+
+  [checks.role]
+    port = 5500
+    type = 'http'
+    interval = '15s'
+    timeout = '10s'
+    path = '/flycheck/role'
+
+  [checks.vm]
+    port = 5500
+    type = 'http'
+    interval = '15s'
+    timeout = '10s'
+    path = '/flycheck/vm'
+
+[[metrics]]
+  port = 9187
+  path = '/metrics'
