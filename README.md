@@ -15,6 +15,8 @@ This is based on the timescaledb image defined in `fly-apps/postgres-flex`.
 
 - [ ] Add script to modify postgresql.conf to include extensions
 - [ ] Add script to activate extensions in the database
+- [ ] Add support for pgxman or trunk for package management --makes
+  installation of extensions easier
 
 ### Deployment on Fly
 
