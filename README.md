@@ -24,18 +24,18 @@ Here are the steps that were taken to deploy on Fly successfully:
 
 1. Build the image and push to Docker Hub via the following commands:
 
-```bash
-docker build . -t <your-dockerhub-username>/flypg-extended:latest --platform "linux/amd64" -f extended.Dockerfile
-docker pushd <your-dockerhub-username>/flypg-extended:latest
-```
+    ```bash
+    docker build . -t <your-dockerhub-username>/flypg-extended:latest --platform "linux/amd64" -f extended.Dockerfile
+    docker push <your-dockerhub-username>/flypg-extended:latest
+    ```
 
 Feel free to change tags as you see fit.
 
 2. Deploy a new postgres cluster on Fly using the following command:
 
-```bash
-fly postgres create --image-ref <your-dockerhub-username>/flypg-extended:latest
-```
+    ```bash
+    fly postgres create --image-ref <your-dockerhub-username>/flypg-extended:latest
+    ```
 
 Follow the interative prompt to configure the deployment settings. Be sure to
 copy Consideration
@@ -63,7 +63,7 @@ With the fly.toml saved, you'll want to add the following build section:
 
  ```toml
  [build]
-image = "<your-dockerhub-username>/flypg-extended:latest"
+    image = "<your-dockerhub-username>/flypg-extended:latest"
  ```
 
 This will ensure that the image is used for future deployments whenever you
