@@ -8,3 +8,7 @@ extensions:
     version: "1.6.2"
   - name: "pgsql-http"
     version: "1.6.0"
+  - name: "pg_ivm"
+    version: "1.7.0"
+  - name: "pg_later"
+    version: "0.0.12+87ad305"

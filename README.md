@@ -2,14 +2,16 @@
 
 This is based on the timescaledb image defined in `fly-apps/postgres-flex`.
 
-### Extensions to Support
+### Supported Extensions
 
 - [x] pg_lakehouse
 - [x] timescaledb
 - [x] postgres_fdw - already part of the contrib modules
-- [ ] pg_search
+- [x] pg_search
 - [x] pgvector
 - [x] pg_cron
+- [x] pg_ivm
+- [x] pg_later
 
 ### TODO
 
