@@ -13,7 +13,7 @@ primary_region = 'ord'
 
 [build]
   # modify this for your use case
-  image = 'rkprod/flypg-extended:latest'
+  image = 'rkprod/flypg-extended:pgx'
 
 [[mounts]]
   source = 'pg_data'

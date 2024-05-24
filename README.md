@@ -6,17 +6,18 @@ This is based on the timescaledb image defined in `fly-apps/postgres-flex`.
 
 - [x] pg_lakehouse
 - [x] timescaledb
-- [ ] postgres_fdw
+- [x] postgres_fdw - already part of the contrib modules
 - [ ] pg_search
-- [ ] pgvector
-- [ ] pg_cron
+- [x] pgvector
+- [x] pg_cron
 
 ### TODO
 
 - [ ] Add script to modify postgresql.conf to include extensions
 - [ ] Add script to activate extensions in the database
-- [ ] Add support for pgxman or trunk for package management --makes
+- [x] Add support for pgxman or trunk for package management --makes
   installation of extensions easier
+- [ ] Add Github actions for CI/CD
 
 ### Deployment on Fly
 

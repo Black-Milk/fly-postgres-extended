@@ -11,3 +11,9 @@ RUN curl -L "https://github.com/paradedb/paradedb/releases/download/v${PG_LAKEHO
     && apt-get install -y /tmp/pg_lakehouse.deb \
     && apt autoremove -y \
     && rm /tmp/pg_lakehouse.deb
+
+# pgxman
+COPY pgxman-packfiles /tmp/pgxman
+
+RUN curl -sfL https://install.pgx.sh | sh -s -- /tmp/pgxman/pgxman_${PG_MAJOR_VERSION}.yaml && \
+  rm -rf /tmp/pgxman
