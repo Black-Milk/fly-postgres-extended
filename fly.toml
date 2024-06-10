@@ -9,11 +9,13 @@ primary_region = 'ord'
 
 [env]
   PRIMARY_REGION = 'ord'
-
+  AWS_REGION = 'us-east-2'
+  APPLICATION_DB_PORT = '5432'
 
 [build]
   # modify this for your use case
-  image = 'rkprod/flypg-extended:latest'
+  # image = 'rkprod/flypg-extended:latest'
+  image = 'subelsky/flypg-extended:latest'
 
 [[mounts]]
   source = 'pg_data'
@@ -72,3 +74,6 @@ primary_region = 'ord'
 [[metrics]]
   port = 9187
   path = '/metrics'
+
+[deploy]
+  release_command = "/usr/local/bin/risekit_foreign_table_setup.sh"
