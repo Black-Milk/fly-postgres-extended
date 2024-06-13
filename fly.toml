@@ -3,7 +3,6 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-# change to your app name
 app = 'risekit-analytics-db'
 primary_region = 'ord'
 
@@ -13,9 +12,10 @@ primary_region = 'ord'
   APPLICATION_DB_PORT = '5432'
 
 [build]
-  # modify this for your use case
+  # NOTE: I could not get Fly to pickup new image builds from Docker Hub,
+  # so I opted to use Fly's Docker builder instead
   # image = 'rkprod/flypg-extended:latest'
-  image = 'subelsky/flypg-extended:latest'
+  dockerfile = "extended.Dockerfile"
 
 [[mounts]]
   source = 'pg_data'
@@ -74,6 +74,3 @@ primary_region = 'ord'
 [[metrics]]
   port = 9187
   path = '/metrics'
-
-[deploy]
-  release_command = "/usr/local/bin/risekit_foreign_table_setup.sh"

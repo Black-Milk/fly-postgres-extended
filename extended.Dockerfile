@@ -17,6 +17,3 @@ COPY postgresql.preload_libraries.conf /data/postgresql/
 RUN echo "include 'postgresql.preload_libraries.conf'" >> /data/postgresql/postgresql.conf
 
 COPY init_db.sh /docker-entrypoint-initdb.d/
-
-COPY risekit_foreign_table_setup.sh /usr/local/bin/risekit_foreign_table_setup.sh
-RUN chmod +x /usr/local/bin/risekit_foreign_table_setup.sh
