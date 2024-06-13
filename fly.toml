@@ -1,21 +1,19 @@
-# fly.toml app configuration file generated for risekit-analytics-db on 2024-05-23T16:50:49-04:00
+# fly.toml app configuration file generated for risekit-analytics-db-subelsky on 2024-06-13T18:14:08-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'risekit-analytics-db'
+app = 'risekit-analytics-db-subelsky'
 primary_region = 'ord'
+
+[build]
+  image = 'rkprod/flypg-extended-subelsky:2024-06-13-19-07'
 
 [env]
   PRIMARY_REGION = 'ord'
   AWS_REGION = 'us-east-2'
-  APPLICATION_DB_PORT = '5432'
-
-[build]
-  # NOTE: I could not get Fly to pickup new image builds from Docker Hub,
-  # so I opted to use Fly's Docker builder instead
-  # image = 'rkprod/flypg-extended:latest'
-  dockerfile = "extended.Dockerfile"
+  APPLICATION_DB_HOSTNAME='risekit-db.fly.dev'
+  APPLICATION_DB_PORT=5432
 
 [[mounts]]
   source = 'pg_data'

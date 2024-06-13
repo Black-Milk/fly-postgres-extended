@@ -1,11 +1,17 @@
 #!/bin/bash
 set -e
 
-echo "Setting up foreign tables"
-
-db_name="risekit_analytics"
+db_name="postgres"
 s3_server_name="s3_risekit_files_production"
 foreign_db_server_name="risekit_production_db_replica"
+
+echo "Setting up extensions"
+
+psql -U postgres -d ${db_name} -p 5433 -c "CREATE EXTENSION IF NOT EXISTS pg_lakehouse;"
+psql -U postgres -d ${db_name} -p 5433 -c "CREATE EXTENSION IF NOT EXISTS postgres_fdw;"
+psql -U postgres -d ${db_name} -p 5433 -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql -U postgres -d ${db_name} -p 5433 -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
+psql -U postgres -d ${db_name} -p 5433 -c "CREATE EXTENSION IF NOT EXISTS pg_cron;"
 
 echo "Setting up pg_lakehouse access to S3"
 
@@ -44,47 +50,14 @@ SQL
 echo "Setting up foreign S3 tables"
 
 psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
-  CREATE FOREIGN TABLE IF NOT EXISTS recommendations_original (
-    _surrogate_key_hash TEXT,
-    job_resource_link_id INTEGER,
-    candidate_id INTEGER,
-    job_resource_title TEXT,
-    job_resource_title_normalized TEXT,
-    candidate_job_title TEXT,
-    candidate_job_title_normalized TEXT,
-    job_created_at DATE,
-    job_expire_at TEXT,
-    job_zip3 INTEGER,
-    candidate_zip3 INTEGER,
-    normalized_candidate_job_title_match_score NUMERIC
+  DROP FOREIGN TABLE IF EXISTS recommendations_dictionaries;
+
+  CREATE FOREIGN TABLE IF NOT EXISTS recommendations_dictionaries (
+    Json_record TEXT
   )
-
   SERVER ${s3_server_name}
-  OPTIONS (path 's3://rise-kit-files-production/recommendations/json/', extension 'json');
+  OPTIONS (path 's3://rise-kit-files-production/recommendations/parquet/', extension 'parquet');
 SQL
-
-psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
-  CREATE OR REPLACE VIEW recommendations AS
-  SELECT 
-      _surrogate_key_hash,
-      job_resource_link_id,
-      candidate_id,
-      job_resource_title,
-      job_resource_title_normalized,
-      candidate_job_title,
-      candidate_job_title_normalized,
-      job_created_at,
-      CASE
-          WHEN job_expire_at = '' THEN NULL
-          ELSE job_expire_at::DATE
-      END AS job_expire_at,
-      job_zip3,
-      candidate_zip3,
-      normalized_candidate_job_title_match_score
-  FROM 
-      recommendations_original;
-SQL
-
 echo "Setting up foreign database tables"
 
 psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
@@ -162,4 +135,12 @@ psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
   )
   SERVER ${foreign_db_server_name}
   OPTIONS (table_name 'users');
+SQL
+
+echo "Setting up views"
+
+psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
+  CREATE VIEW recommendations_view AS
+  SELECT "json_record"::jsonb AS data
+  FROM recommendations_dictionaries;
 SQL
