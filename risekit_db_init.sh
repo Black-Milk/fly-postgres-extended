@@ -140,7 +140,17 @@ SQL
 echo "Setting up views"
 
 psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
-  CREATE VIEW recommendations_view AS
+  CREATE MATERIALIZED VIEW recommendations_view AS
   SELECT "json_record"::jsonb AS data
   FROM recommendations_dictionaries;
+SQL
+
+# at minute 0 of every hour
+once_every_hour="0 * * * *"
+
+# NOTE: overwrites the existing cron job with the same name
+psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
+  SELECT cron.schedule('refresh_recommendations_view',
+         '${once_every_hour}',
+         'REFRESH MATERIALIZED VIEW recommendations_view');
 SQL
