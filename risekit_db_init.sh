@@ -58,6 +58,7 @@ psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
   SERVER ${s3_server_name}
   OPTIONS (path 's3://rise-kit-files-production/recommendations/parquet/', extension 'parquet');
 SQL
+
 echo "Setting up foreign database tables"
 
 psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
@@ -153,4 +154,10 @@ psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
   SELECT cron.schedule('refresh_recommendations_view',
          '${once_every_hour}',
          'REFRESH MATERIALIZED VIEW recommendations_view');
+SQL
+
+# needed to that pg_cron switches to a domain socket connection when connecting
+# to the local database; see https://github.com/citusdata/pg_cron/issues/48#issuecomment-386207327
+psql -U postgres -d ${db_name} -p 5433 --set ON_ERROR_STOP=on <<-SQL
+  UPDATE cron.job SET nodename = '';
 SQL
