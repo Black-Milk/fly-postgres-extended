@@ -13,8 +13,8 @@ This is based on the timescaledb image defined in `fly-apps/postgres-flex`.
 
 ### TODO
 
-- [ ] ~Add script to modify postgresql.conf to include extensions~ This proved not to be possible given the way that Fly aggressively manages config files
-- [ ] Add script to activate extensions in the database
+- [ ] ~~Add script to modify postgresql.conf to include extensions~~ This proved not to be possible given the way that Fly aggressively manages config files. You can only change settings using `fly postgres config`.
+- [x] Add script to activate extensions in the database
 - [ ] Add support for pgxman or trunk for package management --makes installation of extensions easier
 
 ### Deployment on Fly
@@ -42,10 +42,9 @@ fly secrets set --app risekit-analytics-db \
   APPLICATION_DB_PASSWORD=############### \
   AWS_ACCESS_KEY_ID=#################### \
   AWS_SECRET_ACCESS_KEY=####### \
-  AWS_REGION='us-east-2'
 ```
 
-_Note_: The `APPLICATION_DB_USERNAME` is currently set to `mike`, but should probably be set to `risekit-analytics` or something similar.
+_Note_: The `APPLICATION_DB_USERNAME` refers to the foreign data wrapper username used by the analytics database to connect to the replica database. It is currently set to `mike`, but should probably be set to `risekit-analytics` or something similar.
 
 #### Setup preload libraries
 
@@ -55,10 +54,20 @@ Because Fly aggressively manages the PostgreSQL configuration files, there does 
 fly postgres config update --shared-preload-libraries repmgr,timescaledb,pg_lakehouse,pg_cron
 ```
 
-The following script will initialize extensions and foreign data tables, and will create a materialized views, and a `pg_cron` job to refresh that view:
+#### Deploy the app
+
+This will set the `ENV` variables defined in `fly.toml`:
 
 ```bash
-fly ssh console --pty -C '/usr/local/bin/risekit_db_init.sh' --machine ##############
+fly deploy
+```
+
+#### Configure extensions, foreign tables, and pg_cron
+
+The following script will initialize extensions, foreign data tables, and a materialized view. It will also setup a `pg_cron` job to refresh that view:
+
+```bash
+fly ssh console --pty -C '/usr/local/bin/risekit_db_init.sh' -s
 ```
 
 Note that this command has to be run on the primary node of the cluster.
@@ -90,21 +99,6 @@ SELECT * FROM cron.job;
 SELECT * FROM cron.job_run_details;
 ```
 
-This is how you would un-schedule the `pg_cron` job:
-
-```sql
-SELECT cron.unschedule('refresh_recommendations_view', '0 * * * *', 'refresh materialized view recommendations_view');
-```
-
-### Useful pg_cron references
-
-* https://github.com/citusdata/pg_cron
-* https://datawookie.dev/blog/2022/03/scheduling-refresh-materialised-view/
-* https://medium.com/full-stack-architecture/postgresql-caching-with-pg-cron-and-materialized-views-3403697eadbf
-* https://github.com/erichosick/postgresql-cron-example
-* https://www.postgresql.org/docs/current/sql-creatematerializedview.html
-* https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html
-
 ### Example materialized view query
 
 This query illustrates how to extract values from the `jsonb` dictionary in `recommendations_view`:
@@ -126,3 +120,29 @@ data->>'normalized_candidate_job_title_match_score' AS normalized_candidate_job_
 FROM recommendations_view
 ORDER BY job_created_at DESC
 ```
+
+### Un-scheduling a pg_cron job
+
+```sql
+SELECT cron.unschedule('refresh_recommendations_view', '0 * * * *', 'refresh materialized view recommendations_view');
+```
+
+### Recommended Postgres configuration
+
+Since an analytics database is likely to be read-heavy, with a smaller number of simultaneous connections, the following configuration could potentially increase performance. It does not reflect potential use of `timescaledb` or `pg_vector`:
+
+```bash
+fly postgres config update \
+      --max-connections 20         # from 300 \
+      --maintenance-work-mem 512MB # from 65 MB \
+      --work-mem 13MB              # from 4 MB
+```
+
+### Useful pg_cron references
+
+* https://github.com/citusdata/pg_cron
+* https://datawookie.dev/blog/2022/03/scheduling-refresh-materialised-view/
+* https://medium.com/full-stack-architecture/postgresql-caching-with-pg-cron-and-materialized-views-3403697eadbf
+* https://github.com/erichosick/postgresql-cron-example
+* https://www.postgresql.org/docs/current/sql-creatematerializedview.html
+* https://www.postgresql.org/docs/current/sql-refreshmaterializedview.html
