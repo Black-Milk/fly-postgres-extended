@@ -13,8 +13,11 @@ RUN apt-get update \
 RUN curl -L $RELEASE_URL -o /tmp/pg_lakehouse.deb
 
 RUN apt-get install -y /tmp/pg_lakehouse.deb \
-    && apt autoremove -y \
+    && apt-get autoremove -y \
     && rm /tmp/pg_lakehouse.deb
+
+RUN rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 COPY risekit_db_init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/risekit_db_init.sh

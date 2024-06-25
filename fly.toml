@@ -7,7 +7,7 @@ app = 'risekit-analytics-db'
 primary_region = 'ord'
 
 [build]
-  image = 'rkprod/flypg-extended-subelsky:2024-06-14-13-36'
+  image = 'rkprod/flypg-extended-subelsky:2024-06-25-10-07'
 
 [env]
   APPLICATION_DB_HOSTNAME = 'risekit-db.fly.dev'
