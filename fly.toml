@@ -1,19 +1,20 @@
-# fly.toml app configuration file generated for risekit-analytics-db on 2024-05-23T16:50:49-04:00
+# fly.toml app configuration file generated for risekit-analytics-db on 2024-06-21T15:22:45-04:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-# change to your app name
 app = 'risekit-analytics-db'
 primary_region = 'ord'
 
-[env]
-  PRIMARY_REGION = 'ord'
-
-
 [build]
-  # modify this for your use case
-  image = 'rkprod/flypg-extended:latest'
+  image = 'rkprod/flypg-extended-subelsky:2024-06-25-10-07'
+
+[env]
+  APPLICATION_DB_HOSTNAME = 'risekit-db.fly.dev'
+  APPLICATION_DB_NAME = 'risekit'
+  APPLICATION_DB_PORT = '5432'
+  AWS_REGION = 'us-east-2'
+  PRIMARY_REGION = 'ord'
 
 [[mounts]]
   source = 'pg_data'
@@ -68,6 +69,11 @@ primary_region = 'ord'
     interval = '15s'
     timeout = '10s'
     path = '/flycheck/vm'
+
+[[vm]]
+  memory = '4gb'
+  cpu_kind = 'shared'
+  cpus = 2
 
 [[metrics]]
   port = 9187
